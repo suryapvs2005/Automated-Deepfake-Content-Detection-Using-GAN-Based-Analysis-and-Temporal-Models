@@ -1,55 +1,147 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import random
-import time
+import asyncio
 
 app = FastAPI(title="TruthLens AI API")
 
-# Configure CORS
+# -----------------------------
+# CORS Configuration
+# -----------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "https://suryapvs2005.github.io",
+        "https://suryapvs2005.github.io/Automated-Deepfake-Content-Detection-Using-GAN-Based-Analysis-and-Temporal-Models",
+        "https://deepfake-frontend-wj0r.onrender.com",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
+# -----------------------------
+# Root API
+# -----------------------------
 @app.get("/")
 async def root():
-    return {"message": "TruthLens AI Backend Running"}
+    return {
+        "message": "TruthLens AI Backend Running",
+        "status": "online"
+    }
 
+
+# -----------------------------
+# Health Check
+# -----------------------------
 @app.get("/health")
 async def health_check():
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "message": "Backend is healthy"
+    }
 
+
+# -----------------------------
+# Analyze Image / Video
+# -----------------------------
 @app.post("/api/analyze/{media_type}")
-async def analyze_media(media_type: str, file: UploadFile = File(...)):
-    # Simulating processing delay
-    time.sleep(2)
-    
-    # Mock Logic for Initial Verification
-    # In a real scenario, this would call the respective Deepfake Detection Service
-    
-    # Deterministic mock based on filename length to allow testing both Real and Fake
+async def analyze_media(
+    media_type: str,
+    file: UploadFile = File(...)
+):
+
+    # Check media type
+    if media_type not in ["image", "video"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid media type. Use image or video."
+        )
+
+    # Check file
+    if not file.filename:
+        raise HTTPException(
+            status_code=400,
+            detail="No file selected."
+        )
+
+    # Simulate processing
+    await asyncio.sleep(2)
+
+    # Mock detection logic
+    # This is only for demonstration/testing.
     is_fake = len(file.filename) % 2 == 0
-    
+
+    # -----------------------------
+    # FAKE RESULT
+    # -----------------------------
     if is_fake:
+
+        score = round(
+            0.85 + (random.random() * 0.14),
+            3
+        )
+
         return {
             "display_label": "FAKE",
-            "score": 0.85 + (random.random() * 0.14),
-            "explanation": f"This {media_type} shows significant signs of manipulation. Our models detected inconsistencies in the underlying data structure consistent with GAN-generated content.",
+            "score": score,
+            "confidence": round(score * 100, 1),
+
+            "explanation": (
+                f"This {media_type} shows significant signs of "
+                "manipulation. Our models detected inconsistencies "
+                "in the underlying data structure consistent with "
+                "GAN-generated content."
+            ),
+
             "indicators": [
-                {"label": "Artifact Detection", "description": "High frequency noise patterns observed."},
-                {"label": "Consistency Check", "description": "Structural anomalies found in metadata."}
+                {
+                    "label": "Artifact Detection",
+                    "description": "High frequency noise patterns observed."
+                },
+                {
+                    "label": "Consistency Check",
+                    "description": "Structural anomalies found in metadata."
+                }
             ]
         }
+
+    # -----------------------------
+    # REAL RESULT
+    # -----------------------------
     else:
+
+        score = round(
+            0.92 + (random.random() * 0.07),
+            3
+        )
+
         return {
             "display_label": "REAL",
-            "score": 0.92 + (random.random() * 0.07),
-            "explanation": f"This {media_type} appears to be authentic. No significant manipulation traces were found across our analysis pipeline.",
+            "score": score,
+            "confidence": round(score * 100, 1),
+
+            "explanation": (
+                f"This {media_type} appears to be authentic. "
+                "No significant manipulation traces were found "
+                "across our analysis pipeline."
+            ),
+
             "indicators": [
-                {"label": "Digital Signature", "description": "Consistent with original capture device signatures."},
-                {"label": "Error Level Analysis", "description": "No localized compression variances detected."}
+                {
+                    "label": "Digital Signature",
+                    "description": (
+                        "Consistent with original capture device signatures."
+                    )
+                },
+                {
+                    "label": "Error Level Analysis",
+                    "description": (
+                        "No localized compression variances detected."
+                    )
+                }
             ]
         }
