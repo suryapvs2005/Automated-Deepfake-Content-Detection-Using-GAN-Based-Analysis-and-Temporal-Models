@@ -7,7 +7,7 @@ import ResultCard from './components/ResultCard';
 import CyberBackground from './components/CyberBackground';
 import { Video, Mic, FileText, Image as ImageIcon, ShieldCheck, Zap, Lock, Cpu, ArrowRight } from 'lucide-react';
 
-const API_URL = 'YOUR_BACKEND_RENDER_URL';
+const API_URL = 'https://automated-deepfake-content-detection.onrender.com';
 
 function App() {
   const [activeTab, setActiveTab] = useState('image');
